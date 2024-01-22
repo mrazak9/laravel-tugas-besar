@@ -16,9 +16,24 @@ class ScheduleController extends Controller
     public function index(Request $request)
     {
         $user = $request->user();
-        $schedules = StudentSchedule::where('student_id', '=', $user->id)->get();
-        return ScheduleResource::collection($schedules->load('schedule', 'schedule.subject', 'schedule.subject.lecturer', 'student'));
+
+        // Mengambil jadwal untuk mahasiswa tertentu
+        $schedules = StudentSchedule::where('student_id', $user->id)->with('schedule.subject.lecturer')->get();
+
+        // Mengonversi hasil ke dalam format yang diinginkan
+        $formattedSchedules = $schedules->map(function ($studentSchedule) {
+            return [
+                'course' => $studentSchedule->schedule->subject->title,
+                'lecturer' => $studentSchedule->schedule->subject->lecturer->name,
+                'description' => $studentSchedule->schedule->ruangan,
+                'startTime' => $studentSchedule->schedule->jam_mulai,
+                'endTime' => $studentSchedule->schedule->jam_selesai,
+            ];
+        });
+
+        return response()->json($formattedSchedules);
     }
+
 
     /**
      * Store a newly created resource in storage.

@@ -45,5 +45,11 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
         // 'password' => 'hashed',
+        'roles' => 'array',
     ];
+
+    public function hasRole($role)
+    {
+        return in_array($role, $this->roles);
+    }
 }
